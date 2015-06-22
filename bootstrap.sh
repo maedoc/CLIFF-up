@@ -3,25 +3,14 @@ CLIFF_VERSION=2.1.1
 
 sudo apt-get update
 echo "Installing basic packages..."
-sudo apt-get install git <<-EOF
-yes
-EOF
-sudo apt-get install curl <<-EOF
-yes
-EOF
-sudo apt-get install vim <<-EOF
-yes
-EOF
-sudo apt-get install unzip htop <<-EOF
-yes
-EOF
+sudo apt-get install -y git 
+sudo apt-get install -y curl
+sudo apt-get install -y vim
+sudo apt-get install -y unzip htop
+
 echo "Installing Java and JDK"
-sudo apt-get install openjdk-7-jre <<-EOF
-yes
-EOF
-sudo apt-get install openjdk-7-jdk <<-EOF
-yes
-EOF
+sudo apt-get install -y openjdk-7-jre
+sudo apt-get install -y openjdk-7-jdk
 
 echo "Configuring Java and things"
 
@@ -41,9 +30,7 @@ sudo chmod 777 -R *
 
 echo "Install Maven"
 # Why does stupid Maven install Java 6?
-sudo apt-get install maven <<-EOF
-yes
-EOF
+sudo apt-get install -y maven
 
 # tell it again that we do indeed want Java 7
 set JRE_HOME=/usr/lib/jvm/java-7-openjdk-amd64
