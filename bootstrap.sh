@@ -1,5 +1,5 @@
 #!/bin/sh
-CLIFF_VERSION=2.1.1
+CLIFF_VERSION=2.2.0
 
 sudo apt-get update
 echo "Installing basic packages..."
