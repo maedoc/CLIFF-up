@@ -1,5 +1,5 @@
 #!/bin/sh
-CLIFF_VERSION=2.2.0
+CLIFF_VERSION=2.3.0
 
 sudo apt-get update
 echo "Installing basic packages..."
@@ -17,7 +17,7 @@ echo "Configuring Java and things"
 set JRE_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
 cd /home/vagrant
-sudo wget https://raw.githubusercontent.com/ahalterman/CLIFF-up/master/bashrc
+sudo wget https://raw.githubusercontent.com/c4fcm/CLIFF-up/master/bashrc
 sudo rm .bashrc
 sudo mv bashrc .bashrc
 source .bashrc
@@ -48,15 +48,15 @@ sudo tar -xvzf apache-tomcat-7.0.59.tar.gz
 # get tomcat users set up correctly
 cd /home/vagrant/apache-tomcat-7.0.59/conf
 sudo rm tomcat-users.xml
-sudo wget https://raw.githubusercontent.com/ahalterman/CLIFF-up/master/tomcat-users.xml
+sudo wget https://raw.githubusercontent.com/c4fcm/CLIFF-up/master/tomcat-users.xml
 
 echo "Boot Tomcat"
 $CATALINA_HOME/bin/startup.sh
 
 echo "Download CLIFF"
 cd /home/vagrant
-sudo wget https://github.com/c4fcm/CLIFF/releases/download/v$CLIFF_VERSION/CLIFF-$CLIFF_VERSION.war
-sudo mv /home/vagrant/CLIFF-$CLIFF_VERSION.war /home/vagrant/apache-tomcat-7.0.59/webapps/
+sudo wget https://github.com/c4fcm/CLIFF/releases/download/v$CLIFF_VERSION/cliff-$CLIFF_VERSION.war
+sudo mv /home/vagrant/cliff-$CLIFF_VERSION.war /home/vagrant/apache-tomcat-7.0.59/webapps/
 
 echo "Downloading CLAVIN..."
 cd /home/vagrant
@@ -81,7 +81,7 @@ cd /home/vagrant/
 sudo mkdir .m2
 cd .m2
 sudo rm settings.xml
-sudo wget https://raw.githubusercontent.com/ahalterman/CLIFF-up/master/settings.xml
+sudo wget https://raw.githubusercontent.com/c4fcm/CLIFF-up/master/settings.xml
 
 echo "Move files around and redeploy"
 sudo /home/vagrant/apache-tomcat-7.0.59/bin/shutdown.sh
