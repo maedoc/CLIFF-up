@@ -1,94 +1,52 @@
 #!/bin/sh
-CLIFF_VERSION=2.3.0
 
-sudo apt-get update
+export CLIFF_VERSION=2.3.0
+export TOMCAT_VERSION=8.5.9
+export CATALINA_HOME=$HOME/tomcat
+
 echo "Installing basic packages..."
-sudo apt-get install -y git 
-sudo apt-get install -y curl
-sudo apt-get install -y vim
-sudo apt-get install -y unzip htop
-
-echo "Installing Java and JDK"
-sudo apt-get install -y openjdk-7-jre
-sudo apt-get install -y openjdk-7-jdk
-
-echo "Configuring Java and things"
-
-set JRE_HOME=/usr/lib/jvm/java-7-openjdk-amd64
-
-cd /home/vagrant
-sudo wget https://raw.githubusercontent.com/c4fcm/CLIFF-up/master/bashrc
-sudo rm .bashrc
-sudo mv bashrc .bashrc
-source .bashrc
-
-cd /usr/lib/jvm/ 
-sudo chmod 777 /usr/lib/jvm/java-7-openjdk-amd64
-
-cd /usr/lib/jvm/java-7-openjdk-amd64
-sudo chmod 777 -R *
-
-echo "Install Maven"
-# Why does stupid Maven install Java 6?
-sudo apt-get install -y maven
-
-# tell it again that we do indeed want Java 7
-set JRE_HOME=/usr/lib/jvm/java-7-openjdk-amd64
-
-sudo update-alternatives --config java  <<-EOF
-2
-EOF
+sudo apt update
+sudo apt-get install -yqq git curl vim unzip htop openjdk-8-jdk maven
 
 echo "Download Tomcat"
-cd /home/vagrant
-sudo wget http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.59/bin/apache-tomcat-7.0.59.tar.gz 
-sudo tar -xvzf apache-tomcat-7.0.59.tar.gz
-#sudo rm apache-tomcat-7.0.59.tar.gz
+tomcat_mirror=http://mirrors.ircam.fr
+curl -O $tomcat_mirror/pub/apache/tomcat/tomcat-8/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz
+curl -O https://www.apache.org/dist/tomcat/tomcat-8/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz.asc
+
+# check file
+gpg --keyserver pgpkeys.mit.edu --recv-key 2F6059E7
+gpg --verify apache-tomcat-$TOMCAT_VERSION.tar.gz{.asc,}
+tar xzf apache-tomcat-$TOMCAT_VERSION.tar.gz
+mv apache-tomcat-$TOMCAT_VERSION $CATALINA_HOME
 
 # get tomcat users set up correctly
-cd /home/vagrant/apache-tomcat-7.0.59/conf
-sudo rm tomcat-users.xml
-sudo wget https://raw.githubusercontent.com/c4fcm/CLIFF-up/master/tomcat-users.xml
+cat /vagrant/tomcat-users.xml > $CATALINA_HOME/conf/tomcat-users.xml
 
 echo "Boot Tomcat"
 $CATALINA_HOME/bin/startup.sh
 
 echo "Download CLIFF"
-cd /home/vagrant
-sudo wget https://github.com/c4fcm/CLIFF/releases/download/v$CLIFF_VERSION/cliff-$CLIFF_VERSION.war
-sudo mv /home/vagrant/cliff-$CLIFF_VERSION.war /home/vagrant/apache-tomcat-7.0.59/webapps/
+curl https://github.com/c4fcm/CLIFF/releases/download/v$CLIFF_VERSION/cliff-$CLIFF_VERSION.war \
+	-o $CATALINA_HOME/webapps/cliff-$CLIFF_VERSION.war
 
 echo "Downloading CLAVIN..."
-cd /home/vagrant
-sudo git clone https://github.com/Berico-Technologies/CLAVIN.git
+git clone https://github.com/Berico-Technologies/CLAVIN.git
 cd CLAVIN
-git checkout 2.0.0
-echo "Downloading placenames file from Geonames..."
-sudo wget http://download.geonames.org/export/dump/allCountries.zip
-sudo unzip allCountries.zip
-sudo rm allCountries.zip
 
-echo "Compiling CLAVIN"
-sudo mvn compile
+  git checkout 2.0.0
+  echo "Downloading placenames file from Geonames..."
+  curl -O http://download.geonames.org/export/dump/allCountries.zip
+  unzip -qq allCountries.zip
+  echo "Compiling CLAVIN"
+  mvn compile
+  echo "Building Lucene index of placenames--this is the slow one, ~11M places total, ~20 minutes"
+  MAVEN_OPTS="-Xmx3g" mvn exec:java -Dexec.mainClass="com.bericotech.clavin.index.IndexDirectoryBuilder"
+popd # CLAVIN
 
-echo "Building Lucene index of placenames--this is the slow one"
-MAVEN_OPTS="-Xmx4g" mvn exec:java -Dexec.mainClass="com.bericotech.clavin.index.IndexDirectoryBuilder"
-
+# XXX surely this must be configurable..?
 sudo mkdir /etc/cliff2
 sudo ln -s /home/vagrant/CLAVIN/IndexDirectory /etc/cliff2/IndexDirectory
+cat /vagrant/settings.xml > $HOME/.m2/settings.xml
 
-cd /home/vagrant/
-sudo mkdir .m2
-cd .m2
-sudo rm settings.xml
-sudo wget https://raw.githubusercontent.com/c4fcm/CLIFF-up/master/settings.xml
-
-echo "Move files around and redeploy"
-sudo /home/vagrant/apache-tomcat-7.0.59/bin/shutdown.sh
-sudo /home/vagrant/apache-tomcat-7.0.59/bin/startup.sh
-echo "Installation Complete"
-echo "You can log into the virtual machine by typing 'vagrant ssh'..."
-echo "If you need to manually start the Tomcat server, log in to the VM, then type 'sudo /home/vagrant/apache-tomcat-7.0.59/bin/startup.sh' to start the server"
-echo "You can pause the virtual machine by typing 'vagrant suspend'." 
-echo "You can start it again by typing 'vagrant resume'." 
-echo "Type 'vagrant' for more commands that let you control the virtual machine."
+$CATALINA_HOME/bin/shutdown.sh
+$CATALINA_HOME/bin/startup.sh
