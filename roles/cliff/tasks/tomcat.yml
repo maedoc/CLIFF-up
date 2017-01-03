@@ -1,0 +1,47 @@
+---
+
+# TODO run as tomcat:tomcat instead of root
+# TODO run as a service
+
+- name: download tomcat
+  get_url:
+    url: '{{ tomcat_download_url }}'
+    dest: '/opt/{{ tomcat_basename }}'
+
+- name: download tomcat signature
+  get_url:
+    url: '{{ tomcat_sig_url }}'
+    dest: '/opt/{{ tomcat_basename }}.asc'
+
+- name: check if tomcat key present
+  command: gpg --list-keys
+  register: gpg_keys
+
+- name: get tomcat pgp key
+  command: gpg --keyserver pgpkeys.mit.edu --recv-key 2F6059E7
+  when: "'2F6059E7' not in gpg_keys.stdout"
+
+- name: verify tomcat download
+  command: gpg --verify '/opt/{{ tomcat_basename }}.asc' '/opt/{{ tomcat_basename }}'
+  register: tomcat_verify
+
+- fail: msg="Tomcat archive verification failed!."
+  when: "'Good signature' not in tomcat_verify.stderr"
+
+- name: unpack tomcat
+  unarchive: src=/opt/{{ tomcat_basename }} dest=/opt/ remote_src=yes
+
+- name: add server configuration
+  template: 
+    src: tomcat-server.xml.j2 
+    dest: '{{ tomcat_home }}/conf/server.xml'
+
+- name: add default tomcat users
+  template: 
+    src: tomcat-users.xml.j2 
+    dest: '{{ tomcat_home }}/conf/tomcat-users.xml'
+
+- name: add cliff as tomcat webapp
+  get_url:
+    url: '{{ cliff_war_url }}'
+    dest: '{{ tomcat_home }}/webapps/cliff-{{ cliff_version }}.war'

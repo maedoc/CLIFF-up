@@ -1,0 +1,41 @@
+---
+
+- name: get CLAVIN source
+  git: 
+    repo: '{{ clavin_git }}'
+    dest: '{{ clavin_home }}'
+    version: '{{ clavin_version }}'
+
+- name: get placenames archive from geonames
+  get_url:
+    url: '{{ placenames_url }}'
+    dest: '{{ clavin_home }}/{{ placenames_fname }}'
+
+- name: unpack placenames archive
+  unarchive:
+    src: '{{ clavin_home }}/{{ placenames_fname }}'
+    dest: '{{ clavin_home }}/'
+    remote_src: yes
+
+- name: compile clavin
+  command: mvn compile
+  args:
+    chdir: '{{ clavin_home }}'
+    creates: '{{ clavin_home }}/target/classes/com/bericotech/clavin/index/IndexDirectoryBuilder.class'
+
+- name: build index of place names (15+ minutes if not built)
+  command: mvn exec:java -Dexec.mainClass="com.bericotech.clavin.index.IndexDirectoryBuilder"
+  args:
+    chdir: '{{ clavin_home }}'
+    creates: '{{ clavin_home }}/IndexDirectory'
+  environment:
+    MAVEN_OPTS: '-Xmx3g'
+
+- name: ensure /etc/cliff2 exists
+  file: path=/etc/cliff2 state=directory mode=0755
+
+- name: link placenames index as global cliff2 index directory
+  file:
+    src: '{{ clavin_home }}/IndexDirectory'
+    dest: '/etc/cliff2/IndexDirectory'
+    state: link

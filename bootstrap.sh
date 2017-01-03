@@ -40,7 +40,7 @@ unzip -qq allCountries.zip
 echo "Compiling CLAVIN"
 mvn compile
 echo "Building Lucene index of placenames--this is the slow one, ~11M places total, ~20 minutes"
-MAVEN_OPTS="-Xmx3g" mvn exec:java -Dexec.mainClass="com.bericotech.clavin.index.IndexDirectoryBuilder"
+MAVEN_OPTS="-Xmx5g" mvn exec:java -Dexec.mainClass="com.bericotech.clavin.index.IndexDirectoryBuilder"
 cd
 
 # XXX surely this must be configurable..?

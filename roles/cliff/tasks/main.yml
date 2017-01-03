@@ -1,0 +1,12 @@
+---
+
+- name: install apt requirements
+  apt: pkg={{ item }} state=latest
+  with_items:  '{{ apt_packages }}'
+
+- include: tomcat.yml
+
+- include: build-index.yml
+
+- name: start tomcat
+  command: '{{ tomcat_home }}/bin/startup.sh'
