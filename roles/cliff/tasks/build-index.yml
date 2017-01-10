@@ -32,9 +32,11 @@
     MAVEN_OPTS: '-Xmx3g'
 
 - name: ensure /etc/cliff2 exists
+  become: yes
   file: path=/etc/cliff2 state=directory mode=0755
 
 - name: link placenames index as global cliff2 index directory
+  become: yes
   file:
     src: '{{ clavin_home }}/IndexDirectory'
     dest: '/etc/cliff2/IndexDirectory'

@@ -1,11 +1,18 @@
 ---
 
+cliff_home: '/opt/cliff'
+
 tomcat_version: '8.5.9'
 tomcat_mirror: 'http://mirrors.ircam.fr'
 tomcat_basename: 'apache-tomcat-{{ tomcat_version }}.tar.gz'
-tomcat_download_url: '{{ tomcat_mirror }}/pub/apache/tomcat/tomcat-v8/v{{ tomcat_version }}/bin/{{ tomcat_basename }}'
+tomcat_download_url: '{{ tomcat_mirror }}/pub/apache/tomcat/tomcat-8/v{{ tomcat_version }}/bin/{{ tomcat_basename }}'
 tomcat_sig_url: 'https://www.apache.org/dist/tomcat/tomcat-8/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz.asc'
-tomcat_home: '/opt/apache-tomcat-{{ tomcat_version }}'
+tomcat_home: '{{ cliff_home }}/apache-tomcat-{{ tomcat_version }}'
+
+# port on which tomcat listens for start/stop commands
+tomcat_server_port: 8004
+
+# tomcat's web apps served on this port, make requests to this one
 tomcat_port: 8005
 
 cliff_version: '2.3.0'
@@ -13,7 +20,7 @@ cliff_war_url: 'https://github.com/c4fcm/CLIFF/releases/download/v{{ cliff_versi
 
 clavin_git: 'https://github.com/Berico-Technologies/CLAVIN.git'
 clavin_version: '2.0.0'
-clavin_home: '/opt/CLAVIN'
+clavin_home: '{{ cliff_home }}/CLAVIN'
 
 placenames_fname: 'allCountries.zip'
 placenames_url: 'http://download.geonames.org/export/dump/{{ placenames_fname }}'

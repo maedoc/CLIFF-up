@@ -1,12 +1,22 @@
 ---
 
 - name: install apt requirements
+  become: yes
   apt: pkg={{ item }} state=latest
   with_items:  '{{ apt_packages }}'
+
+- name: ensure cliff_home exists and owned by ubuntu
+  become: yes
+  file:
+    path: '{{ cliff_home }}'
+    owner: ubuntu
+    state: directory
+    mode: 0755
 
 - include: tomcat.yml
 
 - include: build-index.yml
 
-- name: start tomcat
-  command: '{{ tomcat_home }}/bin/startup.sh'
+#- name: enable cliff tomcat server
+#  become: yes
+#  service: name=tomcat-cliff enabled=yes state=restarted
