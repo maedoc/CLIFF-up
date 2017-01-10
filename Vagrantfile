@@ -7,6 +7,7 @@ Vagrant.configure("2") do |config|
     vb.cpus = 2
   end
   config.vm.box = "ubuntu/xenial64"
+  config.vm.network "forwarded_port", guest: 8005, host: 8999
   config.vm.provision "ansible_local" do |ansible|
     ansible.playbook = "playbook.yml"
   end
